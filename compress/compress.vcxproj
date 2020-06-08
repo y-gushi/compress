@@ -163,6 +163,7 @@
     <ClInclude Include="RowColumn.h" />
     <ClInclude Include="shareRandW.h" />
     <ClInclude Include="slidewindow.h" />
+    <ClInclude Include="TagAndItems.h" />
     <ClInclude Include="typechange.h" />
     <ClInclude Include="WriteData.h" />
     <ClInclude Include="zipHeader.h" />

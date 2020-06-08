@@ -4,6 +4,7 @@
 #include "ChangeArrayNumber.h"
 #include "shareRandW.h"
 #include "TagAndItems.h"
+#include <iostream>
 
 class Ctags {
 public:

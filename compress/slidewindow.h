@@ -3,8 +3,8 @@
 #include "typechange.h"
 #include <stdlib.h>
 
-#define windowsize 8192//8192//12288
-#define LEVEL 8190
+#define windowsize 12288//8192//12288
+#define LEVEL 12288
 
 class slidewndow {
 public:
