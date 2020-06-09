@@ -10,8 +10,7 @@
 
 class encoding {
 public:
-    slidewndow s;
-    deflate defl;
+
     bitstream bits;
 
     unsigned short hht[19] = { 0 };
@@ -52,13 +51,13 @@ public:
     UINT32 l;//距離の値のカウント
     UINT32 lb;//距離の拡張値のカウント
 
-    FILE* fpr;
-
     encoding();
     ~encoding();
     void huhtable(struct tnode* a[], UINT8 b);
+    UINT32* litrals(UINT32 d);
+    void fixedcompress(slidewndow* s);
     void headerwrite(unsigned char HLIT, unsigned char HDIST, unsigned char BI, unsigned char BT);
-    void makeSign();
+    void makeSign(slidewndow* s, deflate* defl);
     void compress(unsigned char* data, UINT64 dataleng);
     void write(FILE* f);
 

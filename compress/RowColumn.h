@@ -8,7 +8,8 @@
 
 class Ctags {
 public:
-    //Ctags(UINT8 *decorddata,UINT64 datalen,shareRandD *shdata);
+    Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata);
+    ~Ctags();
 
     ArrayNumber NA;
     selection* SCT = nullptr;
@@ -53,24 +54,25 @@ public:
     const char* sheetend = "</sheetData>";//12
     const char* startSV = "<sheetView";//10
 
-    Row* rows = nullptr;//row配列
-    selection* sct = nullptr;//selection 構造体
-    demention* dm = nullptr;//diment 構造体
-    cols* cls = nullptr;//cols 構造体
+    Row* rows = nullptr;
+    selection* sct = nullptr;
+    demention* dm = nullptr;
+    cols* cls = nullptr;
     Pane* Panes = nullptr;
 
-    UINT64 p = 0;//読み込み位置
-    UINT8* fstr = nullptr;//最後の文字列
+    UINT64 p = 0;
+    UINT8* fstr = nullptr;
 
     UINT8* headXML = nullptr;// <sheetPrまでの文字
     UINT8* dimtopane = nullptr;// dimension />から<pane 閉じタグまでの文字
     UINT8* sFPr = nullptr;//sheetFormatPrの取得
     UINT8* MC = nullptr;//マージセル数
 
-    UINT8* data = nullptr;//デコードデータ
+    UINT8* data;//デコードデータ
+    UINT8* wd;//データ更新用
     UINT64 dlen = 0;//デコードデータ長
-    UINT8* coden = nullptr;//コードネーム
-    shareRandD* sh = nullptr;//share配列
+    UINT8* coden;//コードネーム
+    shareRandD* sh;//share配列
     UINT32 maxcol = 0;//文字数字　列max
     int sClen = 0;//diment 文字数
     int sRlen = 0;//diment 文字数
@@ -94,6 +96,19 @@ public:
     void Ctableprint(C* c);
     void sheetread();
     void GetPane();
+
+    const char* closetag = "\"/>";
+    int writep = 0;
+
+    void addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F* f, UINT8* si);//cel挿入 rowspan変更
+    void writesheetdata();
+    void writecols();
+    void writeDiment();
+    void writeSelection();
+    void writecells();
+    void writec(C* ctag, UINT8* ROW);
+    void writefinal();
+
     //メモリ解放
     void Ctablefree(C* c);
     void Rowtablefree();

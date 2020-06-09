@@ -50,6 +50,32 @@ C* Ctags::addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v,
     }
     return c;
 }
+Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata)
+{
+    data = decorddata;
+    dlen = datalen;
+    sh = shdata;
+    coden = nullptr;
+    wd = nullptr;
+}
+
+Ctags::~Ctags()
+{
+    Rowtablefree();
+    selectfree();
+    colfree();
+    panefree();
+
+    free(headXML);
+    free(dimtopane);
+    free(sFPr);
+
+    free(sct);
+    free(dm);
+    free(cls);
+    free(Panes);
+}
+
 //c tag vを配列へ
 void Ctags::GetCtagValue() {
 
@@ -342,45 +368,31 @@ void Ctags::GetSheetPr() {
     p = 0;//sheetdata最初から
 
     int ucode = 0;//dimentionまで <sheetPr とばす
-    /*while (strncmp((char const*)pr, shPr, 8) != 0)
-    {
-        for (int j = 0; j < 8 - 1; j++) {
-            pr[j] = pr[j + 1];
-        }
-        pr[8 - 1] = data[p + ucode];
-        ucode++;
-    }
-    while (data[p + ucode] != '>')
-        ucode++;
-    if (data[p + ucode - 1] == '/') {
-        //tag終了
-        ucode++;
-    }
-    else {//dimentまでの文字列コピー　</sheetPr> tagまで
-        while (strncmp((char const*)pr, shPrEnd, 10) != 0) {
+
+    if (pr) {
+        int result = 1;
+        do {
             for (int j = 0; j < 10 - 1; j++) {
                 pr[j] = pr[j + 1];
             }
             pr[10 - 1] = data[p + ucode];
+            pr[10] = '\0';
             ucode++;
+            if (pr) {
+                result = strncmp((char const*)pr, diment, 10);
+            }
+        } while (result != 0);
+        ucode -= 10;
+        UINT32 msize = (UINT32)ucode + 1;
+        headXML = (UINT8*)malloc(msize);
+        if (headXML) {
+            for (int i = 0; i < ucode; i++) {//dimention前までコピー
+                headXML[i] = data[p];
+                p++;
+            }
+            headXML[ucode] = '\0';
         }
-    }*/
-    while (strncmp((char const*)pr, diment, 10) != 0) {
-        for (int j = 0; j < 10 - 1; j++) {
-            pr[j] = pr[j + 1];
-        }
-        pr[10 - 1] = data[p + ucode];
-        pr[10] = '\0';
-        ucode++;
     }
-    ucode -= 10;
-
-    headXML = (UINT8*)malloc(ucode + 1);
-    for (int i = 0; i < ucode; i++) {//dimention前までコピー
-        headXML[i] = data[p];
-        p++;
-    }
-    headXML[ucode] = '\0';
     free(pr);
 }
 
@@ -632,7 +644,7 @@ void Ctags::GetSelectionPane() {
 
     UINT8* at = (UINT8*)malloc(12);
     UINT8* sve = (UINT8*)malloc(13);
-    UINT8* pn = (UINT8*)malloc(5);
+    UINT8* pn = (UINT8*)malloc(6);
     UINT8* sr = (UINT8*)malloc(7);
     UINT8* PN = (UINT8*)malloc(10);
     UINT8* slcs = (UINT8*)malloc(10);
@@ -955,7 +967,7 @@ void Ctags::Getcols() {
                         mimax[j] = mimax[j + 1];//min max
                 }
                 ccw[13 - 1] = cbf[9 - 1] = chid[8 - 1] = wist[7 - 1] = mimax[5 - 1] = data[p];//最後に付け加える
-                ccw[13] = cbf[9] = chid[8] = wist[7] = mimax[5] = '\0';
+                //ccw[13] = cbf[9] = chid[8] = wist[7] = mimax[5] = '\0';
                 p++;
 
                 if ((strncmp((const char*)ccw, ColcW, 13)) == 0) {
@@ -1114,45 +1126,46 @@ void Ctags::getfinalstr() {
     int result = 0;
     int mresult = 0;
 
-    while (p < dlen) {
-        for (int j = 0; j < 19 - 1; j++) {
-            sm[j] = sm[j + 1];
-            if (j < (16 - 1))
-                Sm[j] = Sm[j + 1];//marge count
-        }
-        Sm[16 - 1] = sm[19 - 1] = fstr[i] = data[p];
-        Sm[16] = sm[19] = '\0';
-        p++; i++;
+    if (sm && Sm) {
+        while (p < dlen) {
+            for (int j = 0; j < 19 - 1; j++) {
+                sm[j] = sm[j + 1];
+                if (j < (16 - 1))
+                    Sm[j] = Sm[j + 1];//marge count
+            }
+            Sm[16 - 1] = sm[19 - 1] = fstr[i] = data[p];
+            p++; i++;
 
-        result = strncmp((const char*)sm, margeinfo, 19);
-        mresult = strncmp((const char*)Sm, marge, 16);
-        if (result == 0) {//マージ　セル数取得
-            UINT64 len = i;
-            while (data[p] != '"') {
-                fstr[i] = data[p];
-                p++; i++;
+            result = strncmp((const char*)sm, margeinfo, 19);
+            mresult = strncmp((const char*)Sm, marge, 16);
+            if (result == 0) {//マージ　セル数取得
+                UINT32 len = UINT32(i);
+                while (data[p] != '"') {
+                    fstr[i] = data[p];
+                    p++; i++;
+                }
+                len = UINT32(i) - len;//文字数取得
+                MC = (UINT8*)malloc(len);
+                for (UINT32 j = 0; j < len; j++)
+                    MC[j] = data[p - len + j];
+                MC[len] = '\0';
             }
-            len = i - len;//文字数取得
-            MC = (UINT8*)malloc(len + 1);
-            for (int j = 0; j < len; j++)
-                MC[j] = data[p - len + j];
-            MC[len] = '\0';
-        }
-        if (mresult == 0) {
-            UINT64 len = i;
-            while (data[p] != '"') {
-                fstr[i] = data[p];
-                p++; i++;
+            if (mresult == 0) {
+                UINT32 len = UINT32(i);
+                while (data[p] != '"') {
+                    fstr[i] = data[p];
+                    p++; i++;
+                }
+                len = UINT32(i) - len;//文字数取得
+                MC = (UINT8*)malloc(len);
+                for (UINT32 j = 0; j < len; j++)
+                    MC[j] = data[p - len + j];
+                MC[len] = '\0';
             }
-            len = i - len;//文字数取得
-            MC = (UINT8*)malloc(len + 1);
-            for (int j = 0; j < len; j++)
-                MC[j] = data[p - len + j];
-            MC[len] = '\0';
         }
+        fstr[s] = '\0';
     }
 
-    fstr[s] = '\0';
     free(sm);
     free(Sm);
     /* <mergeCells count="15">

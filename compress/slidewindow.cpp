@@ -7,10 +7,7 @@ slidewndow::slidewndow()
     distanceexbit = 0;//距離拡張ビットのビット数
     mileexval = 0;//長さ拡張ビットの値
     mileexbit = 0;//長さ拡張ビットのビット数
-    SearchPositionStock = nullptr;//検索一致位置の候補
-    Rootsearchposition = nullptr;
-    SearchMileStock = nullptr;//長さ候補のストック
-    Rootsearchmilestock = nullptr;
+
     maxmilestock = 0;//ストックの最長
     stocknum = 0;//ストック数
     milestock = nullptr;
@@ -27,7 +24,10 @@ slidewndow::slidewndow()
 
 slidewndow::~slidewndow()
 {
-    
+    free(milestock);
+    free(distancestock);
+    free(mile_extension_stock);
+    free(distance_extenshon_stock);
 }
 
 UINT32 slidewndow::slidesearch(unsigned char* p, UINT32 len, UINT32 spos)

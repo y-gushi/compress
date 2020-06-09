@@ -146,9 +146,15 @@
     <ClCompile Include="decode.cpp" />
     <ClCompile Include="deflate.cpp" />
     <ClCompile Include="encode.cpp" />
+    <ClCompile Include="headerRead.cpp" />
+    <ClCompile Include="headerwrite.cpp" />
     <ClCompile Include="RowColumn.cpp" />
+    <ClCompile Include="SearchItemNUm.cpp" />
     <ClCompile Include="shareRandW.cpp" />
+    <ClCompile Include="SheetWriteAndMake.cpp" />
     <ClCompile Include="slidewindow.cpp" />
+    <ClCompile Include="StrMargeAndSearch.cpp" />
+    <ClCompile Include="uintchange.cpp" />
     <ClCompile Include="WriteData.cpp" />
     <ClCompile Include="zipHeader.cpp" />
   </ItemGroup>
@@ -159,12 +165,16 @@
     <ClInclude Include="decode.h" />
     <ClInclude Include="deflate.h" />
     <ClInclude Include="encode.h" />
+    <ClInclude Include="headerRead.h" />
     <ClInclude Include="nodeandtab.h" />
     <ClInclude Include="RowColumn.h" />
+    <ClInclude Include="SearchItemNUm.h" />
     <ClInclude Include="shareRandW.h" />
     <ClInclude Include="slidewindow.h" />
+    <ClInclude Include="StrMargeAndSearch.h" />
     <ClInclude Include="TagAndItems.h" />
     <ClInclude Include="typechange.h" />
+    <ClInclude Include="uintchange.h" />
     <ClInclude Include="WriteData.h" />
     <ClInclude Include="zipHeader.h" />
   </ItemGroup>

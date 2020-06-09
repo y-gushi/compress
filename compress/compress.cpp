@@ -8,8 +8,14 @@
 #include <direct.h>
 #include "encode.h"
 
+//#include "headerRead.h"
+//#include <crtdbg.h>//メモリリーク用
+
 int main()
 {
+    // メモリリーク検出
+    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
     char infile[] = "C:/Users/Bee/Desktop/【1 縦売り 夏】在庫状況.xlsx"; //読み込むファイルの指定 【2020年1月11日更新】2020-発注到着
     char mfile[255] = "C:/Users/Bee/Desktop/test"; //テスト書き出し　26文字
     char foln[255] = "C:/Users/Bee/Desktop/test";
@@ -53,6 +59,10 @@ int main()
     UINT32 readlength = 0;
     /*ヘッダーデータの読み込み　位置取得*/
     ReadZipHead* Hr = new ReadZipHead(&fr);
+
+    /*ヘッダーのオブジェクト*/
+    //HeaderRead* hr = new HeaderRead(infile);
+    //delete hr;
     
     while (!fr.eof()) {
         pos = Hr->readLocal(pos);
@@ -67,7 +77,7 @@ int main()
                         DeflateDecode* dec = new DeflateDecode(&fr);
                         pos = dec->dataread(pos, Hr->LH->nonsize);
 
-                        /*
+                       /*
                         encoding* enc = new encoding;//圧縮 オブジェクト生成
                         enc->compress(dec->ReadV, dec->readlen);//圧縮
                         delete enc;//削除

@@ -87,7 +87,7 @@ void shareRandD::getSicount() {
 
     if (getcount) {
         for (int i = 0; i < sicount_place; i++) {//share count”@”Žš‚É•ÏŠ·
-            UINT32 powsize = pow(10, sicount_place - i - 1);
+            UINT32 powsize = pow(10, (sicount_place - i - 1));
             sicount += (getcount[i] - 48) * powsize;
         }
         free(getcount);
@@ -95,7 +95,7 @@ void shareRandD::getSicount() {
 
     if (getunique) {
         for (int i = 0; i < siunique_place; i++) {//share unique”@”Žš‚É•ÏŠ·
-            UINT32 powsize = pow(10, siunique_place - i - 1);
+            UINT32 powsize = pow(10, (siunique_place - i - 1));
             siunique += (getunique[i] - 48) * powsize;
         }
 

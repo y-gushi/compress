@@ -8,9 +8,11 @@ deflate::deflate()
 
     stocktree = 0;
     limithuffstock = nullptr;
-    milelimithuffstock = nullptr;
+}
 
-    limithuffstock = nullptr;
+deflate::~deflate()
+{
+    free(limithuffstock);
 }
 
 tnode* deflate::talloc(void)
@@ -322,6 +324,7 @@ void deflate::swap(tnode* v[], int i, int j)
     temp = v[i];
     v[i] = v[j];
     v[j] = temp;
+    
 }
 
 tnode* deflate::treemake(tnode* r, tnode* l)

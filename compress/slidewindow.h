@@ -27,10 +27,6 @@ public:
     UINT32* distance_extenshon_stock;//距離拡張ビット格納 before short
     UINT32* distance_extenshonRoot;
 
-    UINT32* SearchPositionStock;//検索一致位置の候補
-    UINT32* Rootsearchposition;
-    UINT32* SearchMileStock;//長さ候補のストック
-    UINT32* Rootsearchmilestock;
     UINT32 maxmilestock;//ストックの最長
     UINT64 stocknum;//ストック数
 

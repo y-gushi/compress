@@ -22,12 +22,13 @@ public:
     int k;
 
     struct tnode** limithuffstock;//長さ制限ハフマンのストック
-    struct tnode** milelimithuffstock;//長さ制限ハフマンのストック
+
     int limitnum;
 
     int stocktree;//格納数
 
     deflate();
+    ~deflate();
 
     struct tnode* talloc(void);
     struct tab* ttalloc(void);
