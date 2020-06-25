@@ -91,6 +91,8 @@ public:
     void Getcols();
     void getcolv();
     
+    void getselection();
+    
     C* addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v, F* fv);
     cols* addcolatyle(cols* cs, UINT8* min, UINT8* max, UINT8* W, UINT8* sty, UINT8* hid, UINT8* bF, UINT8* cuW);
     cols* coltalloc();
