@@ -12,20 +12,20 @@ Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata)
 Ctags::~Ctags()
 {
     
-    //Rowtablefree();
+    Rowtablefree();
     //free(rows);
 
-    //selectfree();
+    selectfree();
 
-    //panefree();
+    panefree();
 
-    //colfree();
+    colfree();
  
-    //free(headXML);
+    free(headXML);
     //free(dimtopane);
     //free(sFPr);
     //free(sct);
-    //free(dm);
+    free(dm);
     //free(cls);
     //free(Panes);
     //free(MC);
@@ -98,14 +98,10 @@ C* Ctags::addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v,
 void Ctags::GetCtagValue() {
 
     int endresult = 1;
-    UINT32 limcol = NA.ColumnArraytoNumber(dm->eC, eClen);//文字数値変換
-    limcol = NA.ColumnCharnumtoNumber(limcol);
 
     UINT8 rs[5] = {0};// <row 検索用
     UINT8 sr[3] = {0};// <c 検索用
     UINT8 shend[13] = {0};//f 検索スライド用
-
-    F* fvs = (F*)malloc(sizeof(F));fvs=nullptr;
 
     while (endresult != 0) {
         for (int j = 0; j < 12 - 1; j++) {
@@ -608,32 +604,70 @@ void Ctags::GetDiment() {
     maxcol = NA.ColumnArraytoNumber(dm->eC, eClen);//現max列
     //std::cout << "diment 最大列: " << dm->eC << std::endl;
 }
-//selection tag get　テーブルに
-void Ctags::GetSelectionPane() {
-    const char* pane = "<pane";//5
+
+void Ctags::getselection(){
+    UINT8 at[12] = {0};
+    UINT8 sr[7] = {0};
+    UINT8 pn[6] = {0};
+    
     const char* ecp = "pane=\"";//6
     const char* active = "activeCell=\"";//12
     const char* sqref = "sqref=\"";//7
+    
+    UINT8* pa = (UINT8*)malloc(1);
+    UINT8* ac = (UINT8*)malloc(1);
+    UINT8* sq = (UINT8*)malloc(1);
+    pa = nullptr; ac = nullptr; sq = nullptr;
+    
+    while (data[p] != '>') {
+        for (int j = 0; j < 12 - 1; j++) {
+            at[j] = at[j + 1];//active
+            if (j < (6 - 1))
+                pn[j] = pn[j + 1];//pane
+            if (j < (7 - 1))
+                sr[j] = sr[j + 1];//sqref
+        }
+        sr[7 - 1] = pn[6 - 1] = at[12 - 1] = data[p];//最後に付け加える
+        p++;
+
+        if (strncmp((char const*)pn, ecp, 6) == 0) {//pane=" 一致
+            
+            free(pa);
+            pa = getvalue();
+        }
+
+        if (strncmp((char const*)at, active, 12) == 0) {//activeCell=" 一致
+            
+            free(ac);
+            ac = getvalue();
+        }
+
+        if (strncmp((char const*)sr, sqref, 7) == 0) {//sqref=" 一致
+            
+            free(sq);
+            sq = getvalue();
+        }
+    }
+    sct = SLTaddtable(sct, pa, ac, sq);//構造体へコピー
+}
+//selection tag get　テーブルに
+void Ctags::GetSelectionPane() {
+    const char* pane = "<pane";//5
+    
     const char* select = "<selection";//10
 
-    int panelen = 0;
-    int activeCelllen = 0;
-    int sqreflen = 0;
-
-    UINT8 at[12] = {0};
+    
     UINT8 sve[13] = {0};
-    UINT8 pn[6] = {0};
-    UINT8 sr[7] = {0};
+    
+    
     UINT8 PN[10] = {0};
     UINT8 slcs[10] = {0};
     
     int PNlen = 0;
-    UINT8* pa = (UINT8*)malloc(1);
-    UINT8* ac = (UINT8*)malloc(1);
-    UINT8* sq = (UINT8*)malloc(1);
+    
     UINT8 PT[5] = {0};
 
-    pa = nullptr; ac = nullptr; sq = nullptr;
+    
     int res = 1;
     int panetagres = 0;
 
@@ -690,75 +724,10 @@ void Ctags::GetSelectionPane() {
         seleresult = strncmp((char const*)slcs, select, 10);
         panetagres = strncmp((char const*)PT, pane, 5);
         if (panetagres == 0) {// <pane tag get
-            //std::cout << "get selection  pane" << std::endl;
             GetPane();
         }
         if (seleresult == 0) {
-            
-            if (data[p] == '/') {//tag終了
-                sct = SLTaddtable(sct, pa, ac, sq);//すべてnullptrわたす
-            }
-            else {
-                while (data[p] != '>') {
-                    for (int j = 0; j < 12 - 1; j++) {
-                        at[j] = at[j + 1];//active
-                        if (j < (6 - 1))
-                            pn[j] = pn[j + 1];//pane
-                        if (j < (7 - 1))
-                            sr[j] = sr[j + 1];//sqref
-                    }
-                    sr[7 - 1] = pn[6 - 1] = at[12 - 1] = data[p];//最後に付け加える
-                    p++;
-
-                    if (strncmp((char const*)pn, ecp, 6) == 0) {//pane=" 一致
-                        panelen = 0;
-                        while (data[p + panelen] != '"')
-                            panelen++;//文字数カウント
-                        free(pa);
-                        UINT32 pasize = (UINT32)panelen + 1;
-                        pa = (UINT8*)malloc(pasize);
-                        for (int i = 0; i < panelen; i++) {
-                            pa[i] = data[p];//pane str
-                            p++;
-                        }
-                        pa[panelen] = '\0';
-                    }
-
-                    if (strncmp((char const*)at, active, 12) == 0) {//activeCell=" 一致
-                        activeCelllen = 0;
-                        while (data[p + activeCelllen] != '"')
-                            activeCelllen++;//文字数カウント
-                        free(ac);
-                        UINT32 acsize = (UINT32)activeCelllen + 1;
-                        ac = (UINT8*)malloc(acsize);
-                        for (int i = 0; i < activeCelllen; i++) {
-                            ac[i] = data[p];//pane str
-                            p++;
-                        }
-                        ac[activeCelllen] = '\0';
-                    }
-
-                    if (strncmp((char const*)sr, sqref, 7) == 0) {//sqref=" 一致
-                        sqreflen = 0;
-                        while (data[p + sqreflen] != '"')
-                            sqreflen++;//文字数カウント
-                        free(sq);
-                        UINT32 sqsize = (UINT32)sqreflen + 1;
-                        sq = (UINT8*)malloc(sqsize);
-                        for (int i = 0; i < sqreflen; i++) {
-                            sq[i] = data[p];//pane str
-                            p++;
-                        }
-                        sq[sqreflen] = '\0';
-                    }
-                }
-                if (pa || ac || sq) {
-                    sct = SLTaddtable(sct, pa, ac, sq);//構造体へコピー
-                    sq = StrInit();
-                    pa = StrInit();
-                    ac = StrInit();
-                }
-            }
+            getselection();
         }
         res = strncmp((char const*)sve, SVend, 13);// </sheetViews>で抜ける
     }
@@ -767,14 +736,10 @@ void Ctags::GetSelectionPane() {
 void Ctags::GetPane() {
     const char* PaneTags[] = { "xSplit=\"","ySplit=\"","topLeftCell=\"","activePane=\"","state=\"" };
     //8 8 13 12 7
-    UINT8* XYs = (UINT8*)malloc(8);
-    memset(XYs, 0, 8);
-    UINT8* tpl = (UINT8*)malloc(13);
-    memset(tpl, 0, 13);
-    UINT8* acP = (UINT8*)malloc(12);
-    memset(acP, 0, 12);
-    UINT8* stt = (UINT8*)malloc(7);
-    memset(stt, 0, 7);
+    UINT8 XYs[8] = {0};
+    UINT8 tpl[13] = {0};
+    UINT8 acP[12] = {0};
+    UINT8 stt[7] = {0};
 
     UINT8* X = (UINT8*)malloc(1); UINT8* Y = (UINT8*)malloc(1);
     UINT8* tL = (UINT8*)malloc(1); UINT8* ap = (UINT8*)malloc(1);
@@ -782,8 +747,6 @@ void Ctags::GetPane() {
 
     X = nullptr; Y = nullptr; tL = nullptr;
     ap = nullptr; s = nullptr;
-
-    int len = 0;
 
     while (data[p] != '>') {
         for (int j = 0; j < 13 - 1; j++) {
@@ -799,64 +762,32 @@ void Ctags::GetPane() {
         p++;
 
         if ((strncmp((const char*)tpl, PaneTags[2], 13)) == 0) {
-            len = 0;
-            while (data[p + len] != '"')
-                len++;
+            
             free(tL);
-            tL = (UINT8*)malloc(len + 1);
-            for (int i = 0; i < len; i++) {
-                tL[i] = data[p]; p++;
-            }
-            tL[len] = '\0';
+            tL = getvalue();
         }
         if ((strncmp((const char*)acP, PaneTags[3], 12)) == 0) {
-            len = 0;
-            while (data[p + len] != '"')
-                len++;
+            
             free(ap);
-            ap = (UINT8*)malloc(len + 1);
-            for (int i = 0; i < len; i++) {
-                ap[i] = data[p]; p++;
-            }
-            ap[len] = '\0';
-            std::cout << "pane action : " << ap << len << std::endl;
+            ap = getvalue();
         }
         if ((strncmp((const char*)XYs, PaneTags[0], 8)) == 0) {
-            len = 0;
-            while (data[p + len] != '"')
-                len++;
+            
             free(X);
-            X = (UINT8*)malloc(len + 1);
-            for (int i = 0; i < len; i++) {
-                X[i] = data[p]; p++;
-            }
-            X[len] = '\0';
+            X = getvalue();
         }
         if ((strncmp((const char*)XYs, PaneTags[1], 8)) == 0) {
-            len = 0;
-            while (data[p + len] != '"')
-                len++;
+            
             free(Y);
-            Y = (UINT8*)malloc(len + 1);
-            for (int i = 0; i < len; i++) {
-                Y[i] = data[p]; p++;
-            }
-            Y[len] = '\0';
+            Y = getvalue();
         }
         if ((strncmp((const char*)stt, PaneTags[4], 7)) == 0) {
-            len = 0;
-            while (data[p + len] != '"')
-                len++;
+            
             free(s);
-            s = (UINT8*)malloc(len + 1);
-            for (int i = 0; i < len; i++) {
-                s[i] = data[p]; p++;
-            }
-            s[len] = '\0';
+            s = getvalue();
         }
     }
     Panes = addpanetable(Panes, X, Y, tL, ap, s);
-    free(tpl); free(acP); free(XYs); free(stt);
 }
 
 Pane* Ctags::addpanetable(Pane* p, UINT8* x, UINT8* y, UINT8* tl, UINT8* ap, UINT8* sta) {
